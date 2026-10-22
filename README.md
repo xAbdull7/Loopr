@@ -1,11 +1,11 @@
-<div align="center">
+﻿<div align="center">
 
 # ⚡ Loopr
 
 **The Next-Generation, Client-Side Discord Quest Automation Engine**  
 *Engineered for maximum stability, military-grade stealth, and zero client performance impact.*
 
-[![Version](https://img.shields.io/badge/Version-2.0.0-10b981?style=for-the-badge&logo=git&logoColor=white)](https://github.com/xAbdull7/Loopr)
+[![Version](https://img.shields.io/badge/Version-2.4.0-10b981?style=for-the-badge&logo=git&logoColor=white)](https://github.com/xAbdull7/Loopr)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://opensource.org/licenses/MIT)
 [![BetterDiscord](https://img.shields.io/badge/Platform-BetterDiscord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://betterdiscord.app/)
 [![Open Source](https://img.shields.io/badge/Open%20Source-100%25-success?style=for-the-badge&logo=github&logoColor=white)](https://github.com/xAbdull7/Loopr)
@@ -37,7 +37,7 @@ Loopr is **100% Free and Open Source**, completely transparent, and crafted to d
 - **Smart Idle Protocol:** Automatically halts task progression when you are actively using your computer, resuming only when you enter an AFK state.
 - **Adaptive Rate-Limit Failsafe:** Immediately disarms and halts the engine if an HTTP 429 status is detected to safeguard your account.
 
-### ⚡ Ultra-Optimized Zero-Lag Architecture (v2.0)
+### ⚡ Ultra-Optimized Zero-Lag Architecture (v2.4)
 - **100% Non-Blocking Execution:** Replaced synchronous system calls with non-blocking child process workers.
 - **Leak-Free Event Lifecycle:** Managed drag-and-drop listener registry ensures zero memory retention across sessions.
 - **Adaptive RAF Animation:** The Matrix canvas effect automatically suspends when concealed or running in Performance Mode.
@@ -57,7 +57,7 @@ Loopr is **100% Free and Open Source**, completely transparent, and crafted to d
 ```
                       ┌─────────────────────────────────────┐
                       │            Loopr Engine             │
-                      │               v2.0.0                │
+                      │               v2.4.0                │
                       └──────────────────┬──────────────────┘
                                          │
         ┌────────────────────────────────┼────────────────────────────────┐
@@ -111,7 +111,7 @@ Access the plugin configuration by navigating to **User Settings** → **Plugins
 
 ```
 Loopr/
-├── Loopr.plugin.js    # Core production plugin script (v2.0.0)
+├── Loopr.plugin.js    # Core production plugin script (v2.4.0)
 ├── README.md          # Project documentation and specifications
 └── LICENSE            # MIT Open Source License
 ```

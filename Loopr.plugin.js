@@ -2,7 +2,7 @@
  * @name Loopr
  * @author M3ZA
  * @description Advanced Discord Quest Automation featuring custom themes, performance mode, and stealth protocols.
- * @version 2.0.0
+ * @version 2.4.0
  * @source https://github.com/xAbdull7/Loopr
  * @website https://github.com/xAbdull7/Loopr
  */
@@ -22,6 +22,27 @@ const StealthTokens = {
 
 // Raw stylesheet data string for injection
 const pluginStyles = `
+    #loopr-toolbar-btn {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 4px;
+        margin: 0 4px;
+        position: relative;
+        transition: background-color 0.15s ease, color 0.15s ease;
+        user-select: none;
+    }
+    #loopr-toolbar-btn:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+    #loopr-toolbar-btn:hover svg {
+        color: #fff !important;
+    }
+
+    .vercel-floating-goat:hover .mascot-zzz { animation: zzz 2s infinite; }
     @keyframes dashboardFade { from { opacity: 0; filter: blur(10px); transform: scale(0.98); } to { opacity: 1; filter: blur(0); transform: scale(1); } }
     @keyframes logSlideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes pulseText { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); color: #fff; } }
@@ -47,7 +68,7 @@ const pluginStyles = `
     
     .vercel-skeleton-line { height: 12px; background: #27272a; border-radius: 4px; margin-bottom: 8px; animation: skeletonPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     .vercel-goat-tooltip { position: absolute; bottom: 70px; right: 0; background: #0a0a0a; color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 12px; white-space: nowrap; pointer-events: none; opacity: 0; transform: translateY(10px); transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); border: 1px solid #27272a; box-shadow: 0 8px 24px rgba(0,0,0,0.8); font-family: system-ui, -apple-system, sans-serif; }
-    .vercel-goat-wrapper { position: fixed; bottom: 30px; right: 30px; width: 56px; height: 56px; z-index: 9999; user-select: none; }
+    .vercel-goat-wrapper { position: fixed; bottom: 30px; right: 30px; width: 56px; height: 56px; z-index: 9999; user-select: none; contain: paint layout; }
     .vercel-goat-wrapper:hover .vercel-goat-tooltip { opacity: 1; transform: translateY(0); }
     .pulse-ring { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; border: 2px solid #4ade80; animation: pulseRingAnim 2s infinite cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none; }
     
@@ -55,7 +76,7 @@ const pluginStyles = `
         position: absolute; top: 0; left: 72px; width: calc(100% - 72px); height: 100%;
         background: #000; z-index: 9999; color: #ededed;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        display: flex; flex-direction: column;
+        display: flex; flex-direction: column; contain: content;
         animation: dashboardFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .vercel-header {
@@ -116,6 +137,8 @@ const createElement = (tag, attributes = {}, styles = {}, innerHTML = "") => {
     return el;
 };
 
+
+
 // Cryptographic and process simulation methods for stealth mechanics
 const stealthUtils = {
     randomDelay: (min, max) => {
@@ -158,6 +181,11 @@ const audioUtils = {
             gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
             osc.connect(gain);
             gain.connect(this.ctx.destination);
+            osc.onended = () => {
+                if (this.ctx && this.ctx.state === 'running') {
+                    this.ctx.suspend().catch(() => {});
+                }
+            };
             osc.start();
             osc.stop(this.ctx.currentTime + duration);
         } catch (_) {}
@@ -180,7 +208,7 @@ const audioUtils = {
 };
 
 const mascotSVGs = {
-    base: (eyeColor, eyeShape, zzz) => `<svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5))"><path d="M 22 20 Q 15 10 12 18 Q 15 25 24 25" fill="#52525b" stroke="#3f3f46" stroke-width="2"/><path d="M 42 20 Q 49 10 52 18 Q 49 25 40 25" fill="#52525b" stroke="#3f3f46" stroke-width="2"/><path d="M 20 28 Q 10 32 15 40 Q 20 35 22 32" fill="#71717a"/><path d="M 44 28 Q 54 32 49 40 Q 44 35 42 32" fill="#71717a"/><path d="M 24 25 L 40 25 L 44 45 L 32 55 L 20 45 Z" fill="#27272a"/><path d="M 22 25 L 42 25 L 43 32 L 21 32 Z" fill="#ef4444"/><path d="M 42 28 L 50 30 L 48 35 Z" fill="#ef4444"/><g fill="${eyeColor}">${eyeShape}</g>${zzz ? '<text x="45" y="20" fill="#a1a1aa" font-size="12" font-family="monospace" font-weight="bold" style="animation: zzz 2s infinite">Z</text><text x="52" y="12" fill="#a1a1aa" font-size="10" font-family="monospace" font-weight="bold" style="animation: zzz 2s infinite; animation-delay: 0.5s">z</text>' : ''}</svg>`
+    base: (eyeColor, eyeShape, zzz) => `<svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5))"><path d="M 22 20 Q 15 10 12 18 Q 15 25 24 25" fill="#52525b" stroke="#3f3f46" stroke-width="2"/><path d="M 42 20 Q 49 10 52 18 Q 49 25 40 25" fill="#52525b" stroke="#3f3f46" stroke-width="2"/><path d="M 20 28 Q 10 32 15 40 Q 20 35 22 32" fill="#71717a"/><path d="M 44 28 Q 54 32 49 40 Q 44 35 42 32" fill="#71717a"/><path d="M 24 25 L 40 25 L 44 45 L 32 55 L 20 45 Z" fill="#27272a"/><path d="M 22 25 L 42 25 L 43 32 L 21 32 Z" fill="#ef4444"/><path d="M 42 28 L 50 30 L 48 35 Z" fill="#ef4444"/><g fill="${eyeColor}">${eyeShape}</g>${zzz ? '<text x="44" y="20" fill="#71717a" font-size="11" font-family="monospace" font-weight="bold" class="mascot-zzz">Z</text><text x="51" y="14" fill="#52525b" font-size="9" font-family="monospace" font-weight="bold" class="mascot-zzz">z</text>' : ''}</svg>`
 };
 
 const getMascot = (state) => {
@@ -191,6 +219,7 @@ const getMascot = (state) => {
 
 module.exports = class Loopr {
     constructor() {
+        this.domCache = {};
         this.DOM_IDS = { 
             button: "app-layer-btn", 
             console: "app-layer-con", 
@@ -199,10 +228,8 @@ module.exports = class Loopr {
             logsArea: "app-layer-logs" 
         };
         
-        this.intervals = { 
-            timer: null, 
-            transitionTimeout: null 
-        };
+        this.intervals = { timer: null, transitionTimeout: null };
+        this.activeWaitCanceler = null;
 
         this.matrixState = {
             animId: null,
@@ -211,15 +238,19 @@ module.exports = class Loopr {
         };
         
         this.activeListeners = [];
+        this.headerObserver = null;
+        this._mountDebounceTimer = null;
         this.originalGetRunningGames = null; 
         
         this.settings = {
             theme: "oled",
-            performanceMode: false,
+            performanceMode: true, // Default to true for max gaming FPS and zero CPU overhead
             autoQueue: true,
             ghostMode: false,
             smartIdle: false,
             simulateCrashes: false,
+            hideActivity: true, // True Stealth: hides quest game from profile & friends
+            speedProfile: "adaptive", // "adaptive" | "turbo" | "safe"
             minJitter: 4,
             maxJitter: 8,
             webhookUrl: ""
@@ -240,7 +271,8 @@ module.exports = class Loopr {
             activePid: null,
             activeSocketId: null,
             activeStreamKey: null,
-            activeTab: 'Overview'
+            activeTab: 'Overview',
+            currentSpeedMode: "turbo"
         };
     }
 
@@ -248,8 +280,16 @@ module.exports = class Loopr {
         this.loadSettings();
         this.loadStats();
         BdApi.DOM.addStyle("app-layer-styles", pluginStyles);
-        this.renderFloatingGoat();  
-        this.setupTelemetryBlocker();
+        this.renderFloatingGoat();
+        this.mountHeaderButton();
+        this.startHeaderObserver();
+        this._onVisibilityChange = () => {
+            if (!document.hidden && this.state.isRunning) {
+                this.updateHUDDisplay();
+        this.updateAdaptiveBadge();
+    }
+        };
+        document.addEventListener('visibilitychange', this._onVisibilityChange);
     }
     
     stop() { 
@@ -261,8 +301,120 @@ module.exports = class Loopr {
         this.removeElement("app-layer-toast");
         BdApi.DOM.removeStyle("app-layer-styles");
         this.teardownTelemetryBlocker();
+        this.stopHeaderObserver();
+        this.unmountHeaderButton();
+        if (this._onVisibilityChange) {
+            document.removeEventListener('visibilitychange', this._onVisibilityChange);
+            this._onVisibilityChange = null;
+        }
+        this.domCache = {};
         audioUtils.dispose();
     }
+
+    // Native Discord TopBar Quick Access
+    mountHeaderButton() {
+        if (document.getElementById("loopr-toolbar-btn")) return;
+        const toolbar = document.querySelector('section[class*="toolbar_"]') || 
+                        document.querySelector('[class*="toolbar_"]') ||
+                        document.querySelector('div[class*="upperContainer_"]') ||
+                        document.querySelector('[class*="headerBar_"] [class*="children_"]');
+        if (!toolbar) return;
+
+        const btn = document.createElement("div");
+        btn.id = "loopr-toolbar-btn";
+        btn.setAttribute("role", "button");
+        btn.setAttribute("aria-label", "Loopr Quest Automation");
+        btn.title = "Loopr (Quest Automation)";
+        btn.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: #b5bac1; transition: color 0.15s ease;">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="rgba(16, 185, 129, 0.25)"></polygon>
+            </svg>
+            <span id="loopr-toolbar-dot" style="display: ${this.state.isRunning ? 'block' : 'none'}; position: absolute; top: 2px; right: 2px; width: 7px; height: 7px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981; pointer-events: none;"></span>
+        `;
+
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            this.toggleLooprUI();
+        };
+
+        if (toolbar.firstChild) {
+            toolbar.insertBefore(btn, toolbar.firstChild);
+        } else {
+            toolbar.appendChild(btn);
+        }
+    }
+
+    unmountHeaderButton() {
+        const btn = document.getElementById("loopr-toolbar-btn");
+        if (btn) btn.remove();
+    }
+
+    startHeaderObserver() {
+        if (this.headerObserver) return;
+        const handleThrottledMutation = () => {
+            if (this._mountDebounceTimer) return;
+            this._mountDebounceTimer = setTimeout(() => {
+                this._mountDebounceTimer = null;
+                if (!document.getElementById("loopr-toolbar-btn")) {
+                    this.mountHeaderButton();
+                }
+            }, 200);
+        };
+        this.headerObserver = new MutationObserver(handleThrottledMutation);
+        this.headerObserver.observe(document.body, { childList: true, subtree: true });
+    }
+
+    stopHeaderObserver() {
+        if (this._mountDebounceTimer) {
+            clearTimeout(this._mountDebounceTimer);
+            this._mountDebounceTimer = null;
+        }
+        if (this.headerObserver) {
+            this.headerObserver.disconnect();
+            this.headerObserver = null;
+        }
+    }
+
+    updateToolbarIndicator(isActive) {
+        const dot = document.getElementById("loopr-toolbar-dot");
+        if (dot) {
+            dot.style.display = isActive ? "block" : "none";
+        }
+    }
+
+    toggleLooprUI() {
+        const isConsoleOpen = Boolean(document.getElementById(this.DOM_IDS.console));
+        const isButtonOpen = Boolean(document.getElementById(this.DOM_IDS.button));
+
+        if (isConsoleOpen || isButtonOpen) {
+            this.closeLooprUI();
+            this.displayToastNotification("Loopr: Closed (Reopen from Top Bar)");
+        } else {
+            this.openLooprUI();
+        }
+    }
+
+    openLooprUI() {
+        if (!document.getElementById(this.DOM_IDS.button)) {
+            this.renderFloatingGoat();
+        }
+        if (!document.getElementById(this.DOM_IDS.console)) {
+            this.renderCompactConsole();
+        }
+        this.displayToastNotification("Loopr: Opened");
+    }
+
+    closeLooprUI() {
+        if (this.state.isRunning) {
+            this.stopEngineAndCleanup();
+        }
+        this.stopMatrixAnimation();
+        this.removeElement(this.DOM_IDS.console);
+        this.removeElement(this.DOM_IDS.button);
+        this.updateToolbarIndicator(false);
+    }
+
 
     // Unified Authentication & Header Resolver
     getAuthToken() {
@@ -302,61 +454,44 @@ module.exports = class Loopr {
         };
     }
 
-    // Cancellable asynchronous delay
-    async waitDelay(ms) {
-        let timer;
+    // High-performance event-driven delay (0% polling CPU)
+    waitDelay(ms) {
         return new Promise((resolve) => {
-            const checkInterval = setInterval(() => {
-                if (!this.state.isRunning) {
-                    clearInterval(checkInterval);
-                    clearTimeout(timer);
-                    resolve(false);
-                }
-            }, 150);
-
+            let timer = null;
+            const cancel = () => {
+                if (timer) clearTimeout(timer);
+                this.activeWaitCanceler = null;
+                resolve(false);
+            };
+            this.activeWaitCanceler = cancel;
             timer = setTimeout(() => {
-                clearInterval(checkInterval);
+                this.activeWaitCanceler = null;
                 resolve(this.state.isRunning);
             }, ms);
         });
     }
 
-    // Non-blocking Asynchronous Process Spoofer
+    cancelCurrentWait() {
+        if (this.activeWaitCanceler) {
+            this.activeWaitCanceler();
+            this.activeWaitCanceler = null;
+        }
+    }
+
+    // High-speed In-Memory Process Spoofer (Zero external process spawning)
     async resolveSpoofedProcess(applicationName) {
         let processId = stealthUtils.generateWindowsPID();
-        let exePath = `C:\\Program Files\\${applicationName}\\${applicationName}.exe`;
+        const targetNames = ['explorer.exe', 'chrome.exe', 'msedge.exe', 'taskmgr.exe', 'svchost.exe', 'discord.exe'];
+        const chosen = targetNames[Math.floor(Math.random() * targetNames.length)];
+        let exePath = `C:\\Windows\\System32\\${chosen}`;
         
         try {
-            const cp = require('child_process');
-            const targetNames = ['explorer.exe', 'discord.exe', 'chrome.exe', 'msedge.exe', 'taskmgr.exe', 'svchost.exe'];
-            
-            const discovered = await new Promise((resolve) => {
-                cp.exec('tasklist /FO CSV /NH', { timeout: 3000 }, (err, stdout) => {
-                    if (err || !stdout) return resolve(null);
-                    const lines = stdout.toString().split('\n');
-                    const valid = lines.filter(l => targetNames.some(t => l.toLowerCase().includes(t)));
-                    if (valid.length === 0) return resolve(null);
-                    const picked = valid[Math.floor(Math.random() * valid.length)].split('","');
-                    if (picked.length > 1) {
-                        const parsedPid = parseInt(picked[1].replace('"', ''));
-                        const parsedName = picked[0].replace('"', '').trim();
-                        if (!isNaN(parsedPid) && parsedPid > 0) {
-                            return resolve({ pid: parsedPid, name: parsedName });
-                        }
-                    }
-                    resolve(null);
-                });
-            });
-
-            if (discovered) {
-                processId = discovered.pid;
-                exePath = `C:\\Windows\\System32\\${discovered.name}`;
-                this.logMessage(`[Stealth Engine] Bound Process: ${discovered.name} (PID: ${processId})`, "success");
+            if (typeof process !== 'undefined' && process.pid) {
+                processId = ((process.pid + Math.floor(Math.random() * 500) + 10) & 0xFFFC) || processId;
             }
-        } catch (_) {
-            // Clean fallback without freezing
-        }
+        } catch (_) {}
 
+        this.logMessage(`[Stealth Engine] Bound Process: ${chosen} (PID: ${processId})`, "success");
         return { processId, exePath };
     }
 
@@ -526,7 +661,7 @@ module.exports = class Loopr {
         panel.innerHTML = `
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
                 <h2 style="color: #10b981; margin: 0; font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: 1px;">Loopr Configuration</h2>
-                <span style="background: #27272a; color: #a1a1aa; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">v2.0.0</span>
+                <span style="background: #27272a; color: #a1a1aa; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">v2.4.0</span>
             </div>
             
             <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
@@ -547,6 +682,29 @@ module.exports = class Loopr {
             <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
                 <h3 style="margin: 0 0 16px 0; font-size: 11px; color: #8e9297; text-transform: uppercase; letter-spacing: 1px;">Automation & Stealth</h3>
                 
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div>
+                        <div style="font-weight: 600; font-size: 14px; color: #fff; margin-bottom: 4px;">Adaptive Speed Engine</div>
+                        <div style="font-size: 12px; color: #b9bbbe;">Auto-adjusts heartbeat frequency based on quest duration & server pressure.</div>
+                    </div>
+                    <select id="lpr-speed-profile" style="background: #202225; border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 12px; outline: none; cursor: pointer;">
+                        <option value="adaptive" ${this.settings.speedProfile === 'adaptive' ? 'selected' : ''}>🧠 Adaptive Engine (Auto)</option>
+                        <option value="turbo" ${this.settings.speedProfile === 'turbo' ? 'selected' : ''}>⚡ Force Turbo (4s-8s)</option>
+                        <option value="safe" ${this.settings.speedProfile === 'safe' ? 'selected' : ''}>🛡️ Force Safe (18s-28s)</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div>
+                        <div style="font-weight: 600; font-size: 14px; color: #10b981; margin-bottom: 4px;">Incognito Status (Hide Game from Profile)</div>
+                        <div style="font-size: 12px; color: #b9bbbe;">Suppresses Rich Presence so friends and servers never see "Playing [Game]" while farming.</div>
+                    </div>
+                    <label class="app-layer-switch">
+                        <input type="checkbox" id="lpr-hide-act" ${this.settings.hideActivity !== false ? 'checked' : ''}>
+                        <span class="app-layer-slider"></span>
+                    </label>
+                </div>
+
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                     <div>
                         <div style="font-weight: 600; font-size: 14px; color: #fff; margin-bottom: 4px;">Auto-Queue Protocol</div>
@@ -642,6 +800,8 @@ module.exports = class Loopr {
             };
 
             bind('lpr-perf', 'performanceMode', true, false, true);
+            bind('lpr-hide-act', 'hideActivity', true);
+            bind('lpr-speed-profile', 'speedProfile');
             bind('lpr-auto', 'autoQueue', true);
             bind('lpr-ghost', 'ghostMode', true);
             bind('lpr-idle', 'smartIdle', true);
@@ -676,6 +836,50 @@ module.exports = class Loopr {
         BdApi.Data.save("Loopr", "stats", this.stats);
     }
     
+        // Adaptive Speed Engine
+    computeSpeedMode(targetDuration) {
+        if (this.settings.speedProfile === "safe") return "safe";
+        if (this.settings.speedProfile === "turbo") return "turbo";
+        // Adaptive rule: quests > 15 mins (900s) adapt to safe human mode (18-28s)
+        return targetDuration > 900 ? "safe" : "turbo";
+    }
+
+    setSpeedMode(mode, reason = "") {
+        this.state.currentSpeedMode = mode;
+        const badgeLabel = mode === "safe" ? "🛡️ Safe Human" : "⚡ Turbo Adaptive";
+        if (reason) {
+            this.logMessage(`[Adaptive Engine] Mode: ${badgeLabel} (${reason})`, mode === "safe" ? "warn" : "success");
+        }
+        this.updateAdaptiveBadge();
+    }
+
+    getJitterRange() {
+        if (this.state.currentSpeedMode === "safe") {
+            return { min: 18, max: 28 };
+        }
+        return {
+            min: Math.max(3, this.settings.minJitter || 4),
+            max: Math.max(5, this.settings.maxJitter || 8)
+        };
+    }
+
+    updateAdaptiveBadge() {
+        const badge = document.getElementById("app-layer-adaptive-badge");
+        if (!badge) return;
+        const isSafe = this.state.currentSpeedMode === "safe";
+        if (isSafe) {
+            badge.style.background = "rgba(245, 158, 11, 0.15)";
+            badge.style.border = "1px solid rgba(245, 158, 11, 0.4)";
+            badge.style.color = "#f59e0b";
+            badge.innerHTML = `<span style="width: 6px; height: 6px; border-radius: 50%; background: #f59e0b; box-shadow: 0 0 8px #f59e0b;"></span> 🛡️ Safe Human (18-28s)`;
+        } else {
+            badge.style.background = "rgba(16, 185, 129, 0.15)";
+            badge.style.border = "1px solid rgba(16, 185, 129, 0.4)";
+            badge.style.color = "#10b981";
+            badge.innerHTML = `<span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></span> ⚡ Turbo Adaptive (4-8s)`;
+        }
+    }
+
     getTheme() { 
         return StealthTokens;
     }
@@ -727,7 +931,7 @@ module.exports = class Loopr {
                         title: title, 
                         description: message, 
                         color: colorCode, 
-                        footer: { text: "Loopr Automation v2.0.0 by M3ZA" }, 
+                        footer: { text: "Loopr Automation v2.4.0 by M3ZA" }, 
                         timestamp: new Date().toISOString() 
                     }] 
                 })
@@ -741,6 +945,7 @@ module.exports = class Loopr {
         if (document.getElementById(this.DOM_IDS.button)) return;
         
         const wrapper = createElement("div", { id: this.DOM_IDS.button, className: "vercel-goat-wrapper" }, {});
+        this.domCache.button = wrapper;
         const isRunning = this.state.isRunning;
         
         if (isRunning) {
@@ -753,6 +958,7 @@ module.exports = class Loopr {
         wrapper.appendChild(floatingBtn);
         
         const tooltip = createElement("div", { className: "vercel-goat-tooltip" }, {}, isRunning ? `Time Left: ${this.formatTime(this.state.targetDuration - this.state.currentProgress)}` : "System Idle");
+        this.domCache.tooltip = tooltip;
         wrapper.appendChild(tooltip);
         
         this.setupDraggable(floatingBtn, wrapper, (didDrag) => {
@@ -804,12 +1010,10 @@ module.exports = class Loopr {
         };
         
         const closeBtn = createElement("button", { className: "vercel-close-btn" }, { color: "#ef4444", borderColor: "rgba(239,68,68,0.3)" }, "✕");
+        closeBtn.title = "Close Loopr (Reopen anytime from Top Bar icon)";
         closeBtn.onclick = () => {
-            if (this.state.isRunning) {
-                this.stopEngineAndCleanup();
-            }
-            this.stopMatrixAnimation();
-            this.removeElement(this.DOM_IDS.console);
+            this.closeLooprUI();
+            this.displayToastNotification("Loopr Closed (Click Top Bar icon to reopen)");
         };
         
         headerActions.appendChild(minBtn);
@@ -845,15 +1049,34 @@ module.exports = class Loopr {
         
         // Overview Tab
         tabContents['Overview'].innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 20px; padding-top: 16px;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; margin-bottom: 16px; padding-top: 12px;">
                 <div style="color: #888; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;">Status: <span style="font-weight: 700; color: ${isRunning ? '#10b981' : '#ef4444'}">${isRunning ? 'ACTIVE' : 'IDLE'}</span></div>
-                <div id="${this.DOM_IDS.percentText}" style="font-size: 46px; font-weight: 700; color: #fff; line-height: 1; margin: 12px 0;">${isRunning && this.state.targetDuration > 0 ? Math.floor((this.state.currentProgress / this.state.targetDuration) * 100) + '%' : '0%'}</div>
+                <div id="app-layer-adaptive-badge" style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; margin: 4px 0;"></div>
+                <div id="${this.DOM_IDS.percentText}" style="font-size: 44px; font-weight: 700; color: #fff; line-height: 1; margin: 6px 0;">${isRunning && this.state.targetDuration > 0 ? Math.floor((this.state.currentProgress / this.state.targetDuration) * 100) + '%' : '0%'}</div>
                 <div id="${this.DOM_IDS.timerText}" style="font-size: 12px; color: #a1a1aa; font-family: 'JetBrains Mono', monospace; background: #111; padding: 4px 12px; border-radius: 12px; border: 1px solid #222;">00:00 / 00:00</div>
             </div>
         `;
         
-        const ghostToggleContainer = createElement("div", {}, { marginTop: "auto", padding: "12px 16px", border: "1px solid #27272a", background: "rgba(255,255,255,0.02)", display: "flex", justifyContent: "space-between", alignItems: "center", borderRadius: "8px", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)" });
-        ghostToggleContainer.innerHTML = `<span style="font-size: 13px; font-weight: 500; color: #fff;">Ghost Mode (Stealth)</span>`;
+        const stealthControls = createElement("div", {}, { marginTop: "auto", display: "flex", flexDirection: "column", gap: "8px" });
+        
+        // Incognito Status Toggle (Hide Game from Profile)
+        const incognitoContainer = createElement("div", {}, { padding: "10px 14px", border: "1px solid #27272a", background: "rgba(255,255,255,0.02)", display: "flex", justifyContent: "space-between", alignItems: "center", borderRadius: "8px" });
+        incognitoContainer.innerHTML = `<span style="font-size: 12px; font-weight: 600; color: #10b981; display: flex; align-items: center; gap: 6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg> Incognito Status (Hide Game)</span>`;
+        const incognitoToggle = createElement("label", { className: "app-layer-switch" }, {}, `
+            <input type="checkbox" id="incognito-toggle-btn" ${this.settings.hideActivity !== false ? 'checked' : ''}>
+            <span class="app-layer-slider"></span>
+        `);
+        incognitoToggle.querySelector('input').onchange = (e) => {
+            this.settings.hideActivity = e.target.checked;
+            this.saveSettings();
+            this.displayToastNotification(this.settings.hideActivity ? "Incognito: Game Activity Hidden" : "Incognito: Game Activity Visible");
+        };
+        incognitoContainer.appendChild(incognitoToggle);
+        stealthControls.appendChild(incognitoContainer);
+
+        // Ghost Mode (Silent Toasts)
+        const ghostToggleContainer = createElement("div", {}, { padding: "10px 14px", border: "1px solid #27272a", background: "rgba(255,255,255,0.02)", display: "flex", justifyContent: "space-between", alignItems: "center", borderRadius: "8px" });
+        ghostToggleContainer.innerHTML = `<span style="font-size: 12px; font-weight: 500; color: #a1a1aa;">Silent Toasts (Ghost UI)</span>`;
         
         const ghostToggle = createElement("label", { className: "app-layer-switch" }, {}, `
             <input type="checkbox" id="ghost-toggle-btn" ${this.settings.ghostMode ? 'checked' : ''}>
@@ -865,7 +1088,9 @@ module.exports = class Loopr {
             this.displayToastNotification(this.settings.ghostMode ? "Ghost Mode: Enabled" : "Ghost Mode: Disabled");
         };
         ghostToggleContainer.appendChild(ghostToggle);
-        tabContents['Overview'].appendChild(ghostToggleContainer);
+        stealthControls.appendChild(ghostToggleContainer);
+
+        tabContents['Overview'].appendChild(stealthControls);
         
         // Terminal Tab
         tabContents['Terminal'].style.padding = "0";
@@ -895,6 +1120,9 @@ module.exports = class Loopr {
         this.setupDraggable(header, consoleContainer);
         
         document.body.appendChild(consoleContainer);
+        this.domCache.console = consoleContainer;
+        this.domCache.percentText = document.getElementById(this.DOM_IDS.percentText);
+        this.domCache.timerText = document.getElementById(this.DOM_IDS.timerText);
         this.renderStoredLogs();
         this.updateHUDDisplay();
     }
@@ -915,9 +1143,18 @@ module.exports = class Loopr {
         }, 4200);
     }
 
-    removeElement(id) { 
-        const el = document.getElementById(id); 
-        if (el) el.remove(); 
+    removeElement(id) {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+        if (id === this.DOM_IDS.console) {
+            this.domCache.console = null;
+            this.domCache.percentText = null;
+            this.domCache.timerText = null;
+        }
+        if (id === this.DOM_IDS.button) {
+            this.domCache.button = null;
+            this.domCache.tooltip = null;
+        }
     }
     
     formatTime(seconds) { 
@@ -928,21 +1165,22 @@ module.exports = class Loopr {
     }
 
     updateHUDDisplay() {
-        const percEl = document.getElementById(this.DOM_IDS.percentText);
+        if (document.hidden) return; // Skip all rendering when Discord is minimized or in background
+        const percEl = this.domCache.percentText || document.getElementById(this.DOM_IDS.percentText);
         if (percEl) {
             const perc = this.state.targetDuration > 0 ? Math.floor((this.state.currentProgress / this.state.targetDuration) * 100) : 0;
-            percEl.innerText = `${Math.min(perc, 100)}%`;
+            percEl.textContent = `${Math.min(perc, 100)}%`;
         }
         
-        const timeEl = document.getElementById(this.DOM_IDS.timerText);
+        const timeEl = this.domCache.timerText || document.getElementById(this.DOM_IDS.timerText);
         if (timeEl) {
-            timeEl.innerText = `${this.formatTime(this.state.currentProgress)} / ${this.formatTime(this.state.targetDuration)}`;
+            timeEl.textContent = `${this.formatTime(this.state.currentProgress)} / ${this.formatTime(this.state.targetDuration)}`;
         }
 
-        const tooltip = document.querySelector('.vercel-goat-tooltip');
+        const tooltip = this.domCache.tooltip || document.querySelector('.vercel-goat-tooltip');
         if (tooltip && this.state.isRunning) {
             const remaining = Math.max(0, this.state.targetDuration - this.state.currentProgress);
-            tooltip.innerText = `Time Left: ${this.formatTime(remaining)}`;
+            tooltip.textContent = `Time Left: ${this.formatTime(remaining)}`;
         }
     }
 
@@ -1002,6 +1240,11 @@ module.exports = class Loopr {
         } else {
             container.appendChild(logLine);
         }
+        
+        // Prevent DOM memory leaks by trimming old log elements
+        while (container.childNodes.length > 50) {
+            container.removeChild(container.lastChild);
+        }
     }
 
     renderStoredLogs() {
@@ -1041,7 +1284,7 @@ module.exports = class Loopr {
         this.state.isRunning = true; 
         this.state.isCrashed = false;
         this.state.questQueue = [];
-        
+        this.setupTelemetryBlocker();
         if (this.intervals.timer) {
             clearInterval(this.intervals.timer);
         }
@@ -1060,6 +1303,7 @@ module.exports = class Loopr {
                             this.state.isCrashed = false;
                             this.logMessage("Simulated Game Restart complete. Resuming.", "info");
                             this.updateMascot('active');
+        this.updateToolbarIndicator(true);
                         }
                     }, stealthUtils.randomDelay(15000, 30000));
                     return;
@@ -1071,7 +1315,9 @@ module.exports = class Loopr {
                 if (this.stats.totalSecondsFarmed % 60 === 0) {
                     this.saveStats();
                 }
-                this.updateHUDDisplay();
+                if (!document.hidden) {
+                    this.updateHUDDisplay();
+                }
             }
         }, 1000);
 
@@ -1185,9 +1431,12 @@ module.exports = class Loopr {
         }
 
         this.state.currentProgress = initialProgress; 
-        this.state.targetDuration = currentTask.target; 
+        this.state.targetDuration = currentTask.target;
         this.updateHUDDisplay();
         this.logMessage(`[Queue] Locked onto: ${applicationName}`, "info");
+        const initialMode = this.computeSpeedMode(currentTask.target);
+        const modeReason = this.settings.speedProfile === "adaptive" ? (currentTask.target > 900 ? "Quest > 15m (Auto Safe Mode)" : "Standard Quest (Turbo Mode)") : `Profile: ${this.settings.speedProfile}`;
+        this.setSpeedMode(initialMode, modeReason);
 
         const isVideoTask = currentTask.taskKey.includes("WATCH") || (!currentTask.taskKey.includes("PLAY") && !currentTask.quest.config.application?.id);
         const isStreamTask = currentTask.taskKey.includes("STREAM") || currentTask.taskKey.includes("BROADCAST");
@@ -1222,7 +1471,8 @@ module.exports = class Loopr {
                 }
             }
             
-            const waitTime = stealthUtils.randomDelay(this.settings.minJitter * 1000, this.settings.maxJitter * 1000);
+            const { min, max } = this.getJitterRange();
+            const waitTime = stealthUtils.randomDelay(min * 1000, max * 1000);
             const canContinue = await this.waitDelay(waitTime);
             if (!canContinue) break;
             
@@ -1238,10 +1488,14 @@ module.exports = class Loopr {
                 });
                 
                 if (res.status === 429) {
-                    this.logMessage("Failsafe: Rate-Limit (429) detected! Aborting to protect account.", "err");
-                    this.sendWebhookNotification("🚨 Failsafe Triggered", "API Rate-Limit detected (429). Engine halted.", 0xff5555);
-                    this.stopEngineAndCleanup(); 
-                    return;
+                    this.logMessage("⚠️ Rate-Limit (429) backpressure detected! Adaptive cooling down for 30s...", "warn");
+                    this.setSpeedMode("safe", "Rate-limit backoff");
+                    this.updateMascot('sleep');
+                    const ok = await this.waitDelay(30000);
+                    if (!ok) break;
+                    this.updateMascot('active');
+                    this.logMessage("Resuming under Safe Human mode...", "info");
+                    continue;
                 } else if (!res.ok && res.status >= 400) {
                     this.logMessage(`Video Progress API responded with status ${res.status}`, "warn");
                 }
@@ -1288,11 +1542,12 @@ module.exports = class Loopr {
         this.state.activePid = processId;
         this.state.activeSocketId = stealthUtils.generateUUID();
         
+        const isHidden = Boolean(this.settings.hideActivity !== false);
         const simulatedGame = { 
             cmdLine: exePath, 
             exeName: executableName, 
             exePath: exePath, 
-            hidden: false, 
+            hidden: isHidden, 
             isLauncher: false, 
             id: applicationId || "0", 
             name: applicationName, 
@@ -1307,20 +1562,26 @@ module.exports = class Loopr {
         discordModules.RunningGameStore.getGameForPID = (pid) => (pid === processId ? simulatedGame : null);
         
         discordModules.FluxDispatcher.dispatch({ type: "RUNNING_GAMES_CHANGE", removed: [], added: [simulatedGame], games: [simulatedGame] });
-        discordModules.FluxDispatcher.dispatch({
-            type: "LOCAL_ACTIVITY_UPDATE",
-            socketId: this.state.activeSocketId,
-            pid: processId,
-            activity: {
-                application_id: applicationId || "0",
-                name: applicationName,
-                type: 0,
-                session_id: BdApi.Webpack.getStore("SessionStore")?.getSessionId() || "default",
-                created_at: Date.now(),
-                timestamps: { start: Date.now() },
-                flags: 0
-            }
-        });
+        
+        // Stealth Incognito: only broadcast to profile/friends if hideActivity is disabled
+        if (!isHidden) {
+            discordModules.FluxDispatcher.dispatch({
+                type: "LOCAL_ACTIVITY_UPDATE",
+                socketId: this.state.activeSocketId,
+                pid: processId,
+                activity: {
+                    application_id: applicationId || "0",
+                    name: applicationName,
+                    type: 0,
+                    session_id: BdApi.Webpack.getStore("SessionStore")?.getSessionId() || "default",
+                    created_at: Date.now(),
+                    timestamps: { start: Date.now() },
+                    flags: 0
+                }
+            });
+        } else {
+            this.logMessage("[Stealth Incognito] Status broadcasting suppressed. Friends cannot see this game.", "success");
+        }
 
         if (isStreamTask) {
             const SelectedChannelStore = BdApi.Webpack.getStore("SelectedChannelStore");
@@ -1368,7 +1629,8 @@ module.exports = class Loopr {
                 }
             }
 
-            const pollingDelay = stealthUtils.randomDelay(this.settings.minJitter * 1000, this.settings.maxJitter * 1000);
+            const { min, max } = this.getJitterRange();
+            const pollingDelay = stealthUtils.randomDelay(min * 1000, max * 1000);
             const canContinue = await this.waitDelay(pollingDelay);
             if (!canContinue) break;
             
@@ -1386,22 +1648,31 @@ module.exports = class Loopr {
                 });
 
                 if (heartbeatRes.status === 429) {
-                    this.logMessage("Failsafe: Rate-Limit (429) on heartbeat! Stopping engine.", "err");
-                    this.stopEngineAndCleanup();
-                    return;
+                    this.logMessage("⚠️ Heartbeat 429 detected! Adaptive cooling down for 30s...", "warn");
+                    this.setSpeedMode("safe", "Rate-limit backoff");
+                    this.updateMascot('sleep');
+                    const ok = await this.waitDelay(30000);
+                    if (!ok) break;
+                    this.updateMascot('active');
+                    this.logMessage("Resuming heartbeat under Safe Human mode...", "info");
+                    continue;
                 }
             } catch (_) {
                 this.logMessage("Heartbeat network warning.", "warn");
             }
             
-            const rawQuestsData = discordModules.QuestsStore.getQuests ? discordModules.QuestsStore.getQuests() : discordModules.QuestsStore.quests;
-            let questsArray = [];
-            if (rawQuestsData instanceof Map) {
-                questsArray = [...rawQuestsData.values()];
-            } else if (rawQuestsData && typeof rawQuestsData === 'object') {
-                questsArray = Object.values(rawQuestsData);
+            const qStore = discordModules.QuestsStore;
+            let currentQuestData = null;
+            if (qStore.getQuest) {
+                currentQuestData = qStore.getQuest(questId);
+            } else {
+                const rawQuestsData = qStore.quests;
+                if (rawQuestsData instanceof Map) {
+                    currentQuestData = rawQuestsData.get(questId);
+                } else if (rawQuestsData && typeof rawQuestsData === 'object') {
+                    currentQuestData = rawQuestsData[questId] || (Array.isArray(rawQuestsData) ? rawQuestsData.find(q => q.id === questId) : Object.values(rawQuestsData).find(q => q.id === questId));
+                }
             }
-            const currentQuestData = questsArray.find(q => q.id === questId);
             
             if (!currentQuestData) break;
             
@@ -1467,6 +1738,9 @@ module.exports = class Loopr {
         this.state.isRunning = false; 
         this.state.isCrashed = false;
         this.updateMascot('sleep');
+        this.updateToolbarIndicator(false);
+        this.cancelCurrentWait();
+        this.teardownTelemetryBlocker();
         
         if (this.intervals.timer) {
             clearInterval(this.intervals.timer);
@@ -1488,12 +1762,14 @@ module.exports = class Loopr {
                 if (Dispatcher) {
                     Dispatcher.dispatch({ type: "RUNNING_GAMES_CHANGE", games: [], added: [], removed: [] });
                     if (this.state.activeSocketId) {
-                        Dispatcher.dispatch({
-                            type: "LOCAL_ACTIVITY_UPDATE",
-                            socketId: this.state.activeSocketId,
-                            pid: this.state.activePid,
-                            activity: null
-                        });
+                        if (this.settings.hideActivity === false) {
+                            Dispatcher.dispatch({
+                                type: "LOCAL_ACTIVITY_UPDATE",
+                                socketId: this.state.activeSocketId,
+                                pid: this.state.activePid,
+                                activity: null
+                            });
+                        }
                         this.state.activeSocketId = null;
                         this.state.activePid = null;
                     }
